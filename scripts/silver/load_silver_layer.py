@@ -9,11 +9,20 @@
     It processes raw data from the 'Bronze' schema and loads it into the 'Silver' 
     schema using a Truncate-and-Load strategy.
 
-🚀 KEY TRANSFORMATION FEATURES:
-    * DATA EXTRACTION: Extracting from SQL Server Bronze without source mutation.
-    * DATA STANDARDIZATION: Handling NULLs, duplicates, and invalid '9999' dates.
-    * BUSINESS LOGIC: Normalizing gender, marital status, and product categories.
-    * METADATA AUDITING: Each table includes a 'load_timestamp' for data lineage.
+🛠️ WHAT WAS DONE (START TO END):
+    1.  DATA EXTRACTION: Raw data read from SQL Server Bronze tables without source mutation.
+    2.  CLEANING & STANDARDIZATION: Used Python and Pandas to fix invalid dates, remove 
+        duplicates, handle missing values, and normalize text fields.
+    3.  BUSINESS RULES: Applied rules to ensure consistency, such as standardizing gender, 
+        marital status, product categories, and country names.
+    4.  DATA QUALITY CHECKS: Enforced checks to ensure only valid business keys and trusted 
+        records are maintained in the Silver layer.
+    5.  METADATA ENRICHMENT: Added columns like 'load_timestamp' to support data lineage 
+        and auditing.
+    6.  BATCH PROCESSING: Existing Silver tables were truncated and reloaded with clean, 
+        trusted data using a controlled batch process.
+    7.  ORCHESTRATION: A central Python orchestrator executed all loads in the correct 
+        dependency order for repeatable data processing.
 
 🏗️ ARCHITECTURE OVERVIEW:
     * STRATEGY: Truncate-and-Load for 100% data consistency.
