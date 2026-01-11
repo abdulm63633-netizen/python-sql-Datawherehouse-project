@@ -322,52 +322,52 @@ def load_crm_sales_details(engine):
 def load_erp_customer_az12(engine):
     try:
         customer_az12    = pd.read_sql("SELECT * FROM bronze.erp_customer_az12", db_engine)
-        
-        
-        # ---------- basic inspection ----------
-        # print(customer_az12.info())
-        # print(customer_az12['gen'].unique())
-        
-        # ---------- drop invalid business keys ----------
+                
+                # ---------- basic inspection ----------
+                # print(customer_az12.info())
+                # print(customer_az12['gen'].unique())
+                
+                # ---------- drop invalid business keys ----------
         customer_az12 = customer_az12.dropna(subset=['cid'])
-        
-        # ---------- remove duplicates ----------
+                
+                # ---------- remove duplicates ----------
         customer_az12 = customer_az12.drop_duplicates(subset=['cid'])
-        
-        # ---------- clean cid ----------
+                
+                # ---------- clean cid ----------
         customer_az12['cid'] = np.where(
-            customer_az12['cid'].str.startswith('NAS'),
-            customer_az12['cid'].str[3:],
-            customer_az12['cid']
-        )
-        
-        # ---------- convert birth date ----------
+                    customer_az12['cid'].str.startswith('NAS'),
+                    customer_az12['cid'].str[3:],
+                    customer_az12['cid']
+                )
+                
+                # ---------- convert birth date ----------
         customer_az12['bdate'] = pd.to_datetime(
-            customer_az12['bdate'],
-            errors='coerce'
-        )
+                    customer_az12['bdate'],
+                    errors='coerce'
+                ).dt.date
+                
+                # ---------- remove future dates ----------
+        today = pd.Timestamp.now().date()
         
-        # ---------- remove future dates ----------
-        today = pd.Timestamp.now().normalize()
         customer_az12.loc[customer_az12['bdate'] > today, 'bdate'] = pd.NaT
-        
-        # ---------- clean gender ----------
+                
+                # ---------- clean gender ----------
         customer_az12['gen'] = (
-            customer_az12['gen']
-            .str.strip()
-            .str.upper()
-            .replace({
-                'M': 'Male',
-                'MALE': 'Male',
-                'F': 'Female',
-                'FEMALE': 'Female',
-                'UNKNOWN': 'Unknown',
-                '': 'Unknown'
-            })
-            .fillna('Unknown')
-        )
-        
-        # ---------- reset index ----------
+                    customer_az12['gen']
+                    .str.strip()
+                    .str.upper()
+                    .replace({
+                        'M': 'Male',
+                        'MALE': 'Male',
+                        'F': 'Female',
+                        'FEMALE': 'Female',
+                        'UNKNOWN': 'Unknown',
+                        '': 'Unknown'
+                    })
+                    .fillna('Unknown')
+                )
+                
+                # ---------- reset index ----------
         customer_az12 = customer_az12.reset_index(drop=True)
         customer_az12['load_timestamp'] = pd.Timestamp.now()
        #=========================== truncating table erp_customer_az12 =========================================#
@@ -378,12 +378,15 @@ def load_erp_customer_az12(engine):
             'erp_customer_az12',
             engine,
             schema='silver',
-            if_exists='append',
+            if_exists='replace',
             index=False
         )
         print("✅ Loaded silver.erp_customer_az12")
     except Exception as e :
         print(f"❌ Failed loading {e}") 
+ 
+
+
  
 
 
